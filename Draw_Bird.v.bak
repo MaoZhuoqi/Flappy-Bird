@@ -1,0 +1,31 @@
+module Draw_Bird( 
+    input clk10,
+    input clr,
+	 input game_end,
+    input up,
+    //input down,
+    output reg [9:0] bird_y_pos
+    );
+	
+	 initial bird_y_pos = 10'b0011110000; //240
+	 assign down = ~up;
+	 
+	 always @ (posedge clk10, posedge clr) 
+	 begin
+		if (clr)
+			bird_y_pos <= 10'b0011110000; //240
+		else if (~game_end) 
+		 begin
+			if ((up == 1) && (bird_y_pos >= 10'b0000001111)) //15
+				bird_y_pos <= bird_y_pos - 10'b0000000110; //-6
+			if ((down == 1) && (bird_y_pos <= 10'b0111010001)) //465
+				bird_y_pos <= bird_y_pos + 10'b0000000110; //6
+			else if (bird_y_pos >=10'b0111010010) //466
+				bird_y_pos <= 10'b0111010001; //465
+			else if (bird_y_pos <=10'b0000001110) //14
+				bird_y_pos <= 10'b0000001111; //15
+		end
+	 end
+		
+endmodule
+

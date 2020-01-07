@@ -1,0 +1,105 @@
+module FlappyBird(
+    // Global clock (50MHz) and clear
+	 input clk,
+	 input clr,
+	 // Button control
+    input up,
+    input down,
+	 // VGA display
+    output hSync,
+    output vSync,
+    output [7:0] rgb,
+	 // 7-seg display
+    output [3:0] AN,
+    output [6:0] CA
+    );
+	
+	wire [9:0] x;
+	wire [9:0] y;
+	wire clk10;
+	wire vSyncSignal;
+	wire [9:0] bird_y_pos;
+	wire [9:0] tube1_x_pos;
+	wire [9:0] tube1_y_pos;
+	wire [9:0] tube2_x_pos;
+	wire [9:0] tube2_y_pos;
+	wire [9:0] tube3_x_pos;
+	wire [9:0] tube3_y_pos;
+	wire game_end;
+	wire [7:0] score;
+	
+	assign vSync = vSyncSignal;
+	
+	VGA_Controller vga_controller(
+		.clk(clk),
+		.clr(clr),
+		.hSync(hSync),
+		.vSync(vSyncSignal),
+		.bright(bright),
+		.x(x),
+		.y(y)
+		);
+	
+	VGA_Bitgen vga_bitgen(
+		.bright(bright),
+		.x(x),
+		.y(y),
+		.bird_y_pos(bird_y_pos),
+	   .tube1_x_pos(tube1_x_pos),
+		.tube1_y_pos(tube1_y_pos),
+		.tube2_x_pos(tube2_x_pos),
+		.tube2_y_pos(tube2_y_pos),
+		.tube3_x_pos(tube3_x_pos),
+		.tube3_y_pos(tube3_y_pos),
+		.game_end(game_end),
+		.score(score),
+		.rgb(rgb)
+		);
+	
+	SevenSegScoreDisplay seven_seg_score_display(
+		.clk(clk),
+		.score(score),
+		.AN(AN),
+		.CA(CA)
+		);
+	
+	SignalFrequency signalfrequency(
+		.clk(clk),
+		.clk10(clk10)
+		);
+		
+	Draw_Bird draw_bird(
+		.clk10(clk10),
+		.clr(clr),
+		.game_end(game_end),
+		.up(up),
+		.down(down),
+		.bird_y_pos(bird_y_pos)
+		);
+	
+	Draw_Tubes draw_tubes(
+		.clk10(vSyncSignal),
+		.clr(clr),
+		.game_end(game_end),
+	   .tube1_x_pos(tube1_x_pos),
+		.tube1_y_pos(tube1_y_pos),
+		.tube2_x_pos(tube2_x_pos),
+		.tube2_y_pos(tube2_y_pos),
+		.tube3_x_pos(tube3_x_pos),
+		.tube3_y_pos(tube3_y_pos),
+		.score(score)
+		);
+	
+	Collision_Detect collision_detect(
+		.clr(clr),
+		.bird_y_pos(bird_y_pos),
+		.tube1_x_pos(tube1_x_pos),
+		.tube1_y_pos(tube1_y_pos),
+		.tube2_x_pos(tube2_x_pos),
+		.tube2_y_pos(tube2_y_pos),
+		.tube3_x_pos(tube3_x_pos),
+		.tube3_y_pos(tube3_y_pos),
+		.game_end(game_end)
+		);
+	
+endmodule 

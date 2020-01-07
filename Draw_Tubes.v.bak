@@ -1,0 +1,65 @@
+module Draw_Tubes( 
+	input clk10,
+	input clr,
+	input game_end,
+	output reg [9:0] tube1_y_pos,
+	output reg [9:0] tube2_y_pos,
+	output reg [9:0] tube3_y_pos,
+	output reg [9:0] tube1_x_pos,
+	output reg [9:0] tube2_x_pos,
+	output reg [9:0] tube3_x_pos,
+	output reg [7:0] score
+    );
+	
+	
+	initial score = 0;
+	initial tube1_x_pos = 364;
+	initial tube2_x_pos = 584;
+	initial tube3_x_pos = 804;
+	initial tube1_y_pos = 240;
+	initial tube2_y_pos = 240;
+	initial tube3_y_pos = 150;
+	
+	wire [6:0] rand;
+	reg [9:0] randconv;
+	
+	random_gen pipe_gen(
+		.clk(clk10),
+		.out(rand)
+	);
+	
+	always @ (posedge clk10, posedge clr) begin
+		if (clr) begin
+			score = 0;
+			tube1_x_pos = 324;
+			tube2_x_pos = 564;
+			tube3_x_pos = 804;
+			tube1_y_pos = 240;
+			tube2_y_pos = 240;
+			tube3_y_pos = 150;
+		end
+		else if (~game_end) begin
+			// converted rand to randconv, lowing game difficulty
+			randconv = rand + 150;
+			tube1_x_pos = tube1_x_pos - 1;
+			tube2_x_pos = tube2_x_pos - 1;
+			tube3_x_pos = tube3_x_pos - 1;
+			if (tube1_x_pos <= 114) begin
+				tube1_x_pos = 804;
+				tube1_y_pos = randconv;
+				score = score + 1;
+			end
+			if (tube2_x_pos <= 114) begin
+				tube2_x_pos = 804;
+				tube2_y_pos = randconv;
+				score = score + 1;
+			end
+			if (tube3_x_pos <= 114) begin
+				tube3_x_pos = 804;
+				tube3_y_pos = randconv;
+				score = score + 1;
+			end
+		end
+	end
+
+endmodule

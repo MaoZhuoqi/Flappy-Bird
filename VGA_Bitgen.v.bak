@@ -1,0 +1,136 @@
+module VGA_Bitgen(
+    input bright,
+    input [9:0] x,
+    input [9:0] y,
+	 input [9:0] bird_y_pos,
+	 input [9:0] tube1_x_pos,
+	 input [9:0] tube1_y_pos,
+	 input [9:0] tube2_x_pos,
+	 input [9:0] tube2_y_pos,
+	 input [9:0] tube3_x_pos,
+	 input [9:0] tube3_y_pos,
+	 input game_end,
+	 input [7:0] score,
+    output reg [7:0] rgb
+    );
+	
+	// Set color constant
+	parameter BLACK = 8'b000_000_00;
+	parameter WHITE = 8'b111_111_11;
+	parameter RED = 8'b111_000_00;
+	parameter GREEN = 8'b000_111_00;
+	parameter BLUE = 8'b000_000_11;
+	
+	// Set bird_x_pos
+	wire [9:0] bird_x_pos;
+	assign bird_x_pos = 364;
+	
+	// For score display
+	reg [3:0] dig_2;
+	reg [3:0] dig_1;
+	reg [3:0] dig_0;
+	reg Dig0Seg0, Dig0Seg1, Dig0Seg2, Dig0Seg3, Dig0Seg4, Dig0Seg5, Dig0Seg6;
+	reg Dig1Seg0, Dig1Seg1, Dig1Seg2, Dig1Seg3, Dig1Seg4, Dig1Seg5, Dig1Seg6;
+	reg Dig2Seg0, Dig2Seg1, Dig2Seg2, Dig2Seg3, Dig2Seg4, Dig2Seg5, Dig2Seg6;
+	reg digit_display_2, digit_display_1, digit_display_0;
+	
+	always @ (*) begin
+		// Gaming!
+		if (~game_end) begin
+			if (~bright)
+				rgb = BLACK; // force black if not bright
+			else if ((x >= bird_x_pos - 15) && (x <= bird_x_pos + 15) && (y >= bird_y_pos - 15) && (y <= bird_y_pos + 15))
+				rgb = RED; // draw the red bird
+			else if (
+				((x >= tube1_x_pos - 30) && (x <= tube1_x_pos + 30) && ((y >= tube1_y_pos + 30) || (y <= tube1_y_pos - 30))) || 
+				((x >= tube2_x_pos - 30) && (x <= tube2_x_pos + 30) && ((y >= tube2_y_pos + 30) || (y <= tube2_y_pos - 30))) || 
+				((x >= tube3_x_pos - 30) && (x <= tube3_x_pos + 30) && ((y >= tube3_y_pos + 30) || (y <= tube3_y_pos - 30)))
+				)
+				rgb = GREEN; // draw the green tubes
+			else
+				rgb = BLUE; // background color
+		end
+		
+		// Game ends, display score
+		else begin
+			// decompose scores into 3 digits
+			dig_2 = score / 100;
+			dig_1 = (score / 10) % 10;
+			dig_0 = score % 10;
+			
+			// set display logic for each segment of each digit
+			Dig0Seg0 = ((x >= 559) & (x <= 609) & (y >= 160) & (y <= 170));
+			Dig0Seg1 = ((x >= 614) & (x <= 624) & (y >= 160) & (y <= 237));
+			Dig0Seg2 = ((x >= 614) & (x <= 624) & (y >= 243) & (y <= 320));
+			Dig0Seg3 = ((x >= 559) & (x <= 609) & (y >= 310) & (y <= 320));
+			Dig0Seg4 = ((x >= 544) & (x <= 554) & (y >= 243) & (y <= 320));
+			Dig0Seg5 = ((x >= 544) & (x <= 554) & (y >= 160) & (y <= 237));
+			Dig0Seg6 = ((x >= 559) & (x <= 609) & (y >= 235) & (y <= 245));
+
+			Dig1Seg0 = ((x + 120 >= 559) & (x + 120 <= 609) & (y >= 160) & (y <= 170));
+			Dig1Seg1 = ((x + 120 >= 614) & (x + 120 <= 624) & (y >= 160) & (y <= 237));
+			Dig1Seg2 = ((x + 120 >= 614) & (x + 120 <= 624) & (y >= 243) & (y <= 320));
+			Dig1Seg3 = ((x + 120 >= 559) & (x + 120 <= 609) & (y >= 310) & (y <= 320));
+			Dig1Seg4 = ((x + 120 >= 544) & (x + 120 <= 554) & (y >= 243) & (y <= 320));
+			Dig1Seg5 = ((x + 120 >= 544) & (x + 120 <= 554) & (y >= 160) & (y <= 237));
+			Dig1Seg6 = ((x + 120 >= 559) & (x + 120 <= 609) & (y >= 235) & (y <= 245));
+	
+			Dig2Seg0 = ((x + 240 >= 559) & (x + 240 <= 609) & (y >= 160) & (y <= 170));
+			Dig2Seg1 = ((x + 240 >= 614) & (x + 240 <= 624) & (y >= 160) & (y <= 237));
+			Dig2Seg2 = ((x + 240 >= 614) & (x + 240 <= 624) & (y >= 243) & (y <= 320));
+			Dig2Seg3 = ((x + 240 >= 559) & (x + 240 <= 609) & (y >= 310) & (y <= 320));
+			Dig2Seg4 = ((x + 240 >= 544) & (x + 240 <= 554) & (y >= 243) & (y <= 320));
+			Dig2Seg5 = ((x + 240 >= 544) & (x + 240 <= 554) & (y >= 160) & (y <= 237));
+			Dig2Seg6 = ((x + 240 >= 559) & (x + 240 <= 609) & (y >= 235) & (y <= 245));
+			
+			// set display logic for each digit
+			case (dig_2)
+				0: digit_display_2 = (Dig2Seg0 | Dig2Seg1 | Dig2Seg2 | Dig2Seg3 | Dig2Seg4 | Dig2Seg5);
+				1: digit_display_2 = (Dig2Seg1 | Dig2Seg2);
+				2: digit_display_2 = (Dig2Seg0 | Dig2Seg1 | Dig2Seg6 | Dig2Seg4 | Dig2Seg3);
+				3: digit_display_2 = (Dig2Seg0 | Dig2Seg1 | Dig2Seg6 | Dig2Seg2 | Dig2Seg3);
+				4: digit_display_2 = (Dig2Seg5 | Dig2Seg6 | Dig2Seg1 | Dig2Seg2);
+				5: digit_display_2 = (Dig2Seg0 | Dig2Seg5 | Dig2Seg6 | Dig2Seg2 | Dig2Seg3);
+				6: digit_display_2 = (Dig2Seg0 | Dig2Seg5 | Dig2Seg6 | Dig2Seg2 | Dig2Seg3 | Dig2Seg4);
+				7: digit_display_2 = (Dig2Seg0 | Dig2Seg1 | Dig2Seg2);
+				8: digit_display_2 = (Dig2Seg0 | Dig2Seg1 | Dig2Seg2 | Dig2Seg3 | Dig2Seg4 | Dig2Seg5 | Dig2Seg6);
+				9: digit_display_2 = (Dig2Seg0 | Dig2Seg5 | Dig2Seg6 | Dig2Seg1 | Dig2Seg2 | Dig2Seg3);
+				default: digit_display_2 = 0;
+			endcase
+
+			case (dig_1)
+				0: digit_display_1 = (Dig1Seg0 | Dig1Seg1 | Dig1Seg2 | Dig1Seg3 | Dig1Seg4 | Dig1Seg5);
+				1: digit_display_1 = (Dig1Seg1 | Dig1Seg2);
+				2: digit_display_1 = (Dig1Seg0 | Dig1Seg1 | Dig1Seg6 | Dig1Seg4 | Dig1Seg3);
+				3: digit_display_1 = (Dig1Seg0 | Dig1Seg1 | Dig1Seg6 | Dig1Seg2 | Dig1Seg3);
+				4: digit_display_1 = (Dig1Seg5 | Dig1Seg6 | Dig1Seg1 | Dig1Seg2);
+				5: digit_display_1 = (Dig1Seg0 | Dig1Seg5 | Dig1Seg6 | Dig1Seg2 | Dig1Seg3);
+				6: digit_display_1 = (Dig1Seg0 | Dig1Seg5 | Dig1Seg6 | Dig1Seg2 | Dig1Seg3 | Dig1Seg4);
+				7: digit_display_1 = (Dig1Seg0 | Dig1Seg1 | Dig1Seg2);
+				8: digit_display_1 = (Dig1Seg0 | Dig1Seg1 | Dig1Seg2 | Dig1Seg3 | Dig1Seg4 | Dig1Seg5 | Dig1Seg6);
+				9: digit_display_1 = (Dig1Seg0 | Dig1Seg5 | Dig1Seg6 | Dig1Seg1 | Dig1Seg2 | Dig1Seg3);
+				default: digit_display_1 = 0;
+			endcase
+
+			case (dig_0)
+				0: digit_display_0 = (Dig0Seg0 | Dig0Seg1 | Dig0Seg2 | Dig0Seg3 | Dig0Seg4 | Dig0Seg5);
+				1: digit_display_0 = (Dig0Seg1 | Dig0Seg2);
+				2: digit_display_0 = (Dig0Seg0 | Dig0Seg1 | Dig0Seg6 | Dig0Seg4 | Dig0Seg3);
+				3: digit_display_0 = (Dig0Seg0 | Dig0Seg1 | Dig0Seg6 | Dig0Seg2 | Dig0Seg3);
+				4: digit_display_0 = (Dig0Seg5 | Dig0Seg6 | Dig0Seg1 | Dig0Seg2);
+				5: digit_display_0 = (Dig0Seg0 | Dig0Seg5 | Dig0Seg6 | Dig0Seg2 | Dig0Seg3);
+				6: digit_display_0 = (Dig0Seg0 | Dig0Seg5 | Dig0Seg6 | Dig0Seg2 | Dig0Seg3 | Dig0Seg4);
+				7: digit_display_0 = (Dig0Seg0 | Dig0Seg1 | Dig0Seg2);
+				8: digit_display_0 = (Dig0Seg0 | Dig0Seg1 | Dig0Seg2 | Dig0Seg3 | Dig0Seg4 | Dig0Seg5 | Dig0Seg6);
+				9: digit_display_0 = (Dig0Seg0 | Dig0Seg5 | Dig0Seg6 | Dig0Seg1 | Dig0Seg2 | Dig0Seg3);
+				default: digit_display_0 = 0;
+			endcase
+			
+			// display numbers
+			if (digit_display_2 | digit_display_1 | digit_display_0)
+				rgb = WHITE; // display numbers in white
+			else
+				rgb = BLACK; // force black elsewhere
+		end
+	end
+endmodule 
